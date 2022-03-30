@@ -1,0 +1,10 @@
+.*
+*.pyc
+*.npy
+*.p
+*.log
+*~
+
+raw_data
+
+!/.gitignore

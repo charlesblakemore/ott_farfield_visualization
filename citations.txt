@@ -1,0 +1,12 @@
+@software{tange_2022_6377950,
+      author       = {Tange, Ole},
+      title        = {GNU Parallel 20220322 ('Маріу́поль')},
+      month        = Mar,
+      year         = 2021,
+      note         = {{GNU Parallel is a general parallelizer to run
+                       multiple serial command line programs in parallel
+                       without changing them.}},
+      publisher    = {Zenodo},
+      doi          = {10.5281/zenodo.6377950},
+      url          = {https://doi.org/10.5281/zenodo.6377950}
+}

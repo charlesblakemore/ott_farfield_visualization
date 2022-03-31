@@ -2,7 +2,7 @@
 
 START=$SECONDS
 
-NBATCH=6
+NBATCH=13
 NFRAME=101
 
 
@@ -25,7 +25,7 @@ make_frame(){
     ##########################################################################
 
     ### Custom saving options (for making movies and other things)
-    PLOT_BASE="/Users/manifestation/Stanford/beads/plots/ott_farfield/"
+    PLOT_BASE="/home/cblakemore/plots/ott_farfield/"
     TITLE="zsweep_0-50um_trans"
     SAVEPATH="${PLOT_BASE}${TITLE}"
 
@@ -45,7 +45,7 @@ make_frame(){
     ### taking about 10 seconds (~8-9 second overhead on all) for simple
     ### configurations, and NMAX=500 taking about 200 seconds
     # NMAX="50"
-    NMAX="50"
+    NMAX="200"
 
     ### Scatterer variables 
     RBEAD="3.76e-6"
@@ -63,8 +63,8 @@ make_frame(){
     YOFFSET="0.0e-6"
 
     ### Output sampling
-    NTHETA="501"
-    NPHI="501"
+    NTHETA="1001"
+    NPHI="1001"
 
 
 

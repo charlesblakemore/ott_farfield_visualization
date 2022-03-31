@@ -100,7 +100,7 @@ show_fig = False
 # plot_3d_sphere = True
 plot_3d_sphere = False
 
-manual_phase_plot_lims = (-2*np.pi, 2*np.pi)
+manual_phase_plot_lims = (-3*np.pi, 3*np.pi)
 max_radiance_val = 6.0
 
 # manual_phase_plot_lims = ()

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-START=$SECONDS
+START=${SECONDS}
 
 ##########################################################################
 ####################    MATLAB AND OTT SETTINGS    #######################
@@ -12,7 +12,7 @@ OUTPATH="../raw_data/"
 ### taking about 10 seconds (~8-9 second overhead on all) for simple
 ### configurations, and NMAX=500 taking about 200 seconds
 # NMAX="50"
-NMAX="50"
+NMAX="100"
 
 ### Scatterer variables 
 RBEAD="3.76e-6"
@@ -29,12 +29,12 @@ POLARISATION="X"
 
 XOFFSET="0.0e-6"
 YOFFSET="0.0e-6"
-ZOFFSET="-2.0e-6"
-
+ZOFFSET="-100.0e-6"
+ZSTR="100um"
 
 ### Output sampling
-NTHETA="701"
-NPHI="701"
+NTHETA="1001"
+NPHI="1001"
 
 
 
@@ -42,19 +42,25 @@ NPHI="701"
 ######################    PYTHON/PLOT SETTINGS    ########################
 ##########################################################################
 
-### Custom saving options (for making movies and other things)
-# PLOT_BASE=""
-PLOT_BASE="/Users/manifestation/Stanford/beads/plots/ott_farfield/test"
-# FIGNAME=""
-FIGNAME="derp.png"
-
 ### NOTE: YOU WILL NEED TO EDIT THE PYTHON FILE YOURSELF IF YOU WANT TO
 ### CHANGE THE RAY-TRACING ANALYSIS. THE INITIAL HARD-CODED IMPLEMENTATION
 ### IS PRETTY SIMPLE
 
+SAVE=1
+SHOW=1
+
 # BEAM="inc"
 # BEAM="scat"
 BEAM="tot"
+
+### Custom saving options (for making movies and other things)
+# PLOT_BASE=""
+PLOT_BASE="/Users/manifestation/Stanford/beads/plots/ott_farfield/param_sweeps/"
+TITLE="7_5um_german_new_trap/height/${BEAM}_nmax_${NMAX}_nsamp_${NTHETA}_z_${ZSTR}.png"
+# TITLE=""
+FIGNAME="${PLOT_BASE}${TITLE}"
+# FIGNAME=""
+
 
 ### Boolean for transmitted vs. reflected
 TRANS=1
@@ -83,12 +89,20 @@ echo "    ------------------------------    "
 echo "     Executing MATLAB Calculation     "
 echo "    ------------------------------    "
 
-M_ARGSTR1="${RBEAD} ${N_PARTICLE} ${N_MEDIUM} ${WAVELENGTH0}"
-M_ARGSTR2="${NA} ${POLARISATION} ${XOFFSET} ${YOFFSET} ${ZOFFSET}"
-M_ARGSTR3="${NTHETA} ${NPHI} ${NMAX} ${OUTPATH}"
-M_ARGSTR="${M_ARGSTR1} ${M_ARGSTR2} ${M_ARGSTR3}"
+# M_ARGSTR1="${RBEAD} ${N_PARTICLE} ${N_MEDIUM} ${WAVELENGTH0}"
+# M_ARGSTR2="${NA} ${POLARISATION} ${XOFFSET} ${YOFFSET} ${ZOFFSET}"
+# M_ARGSTR3="${NTHETA} ${NPHI} ${NMAX} ${OUTPATH}"
+# M_ARGSTR="${M_ARGSTR1} ${M_ARGSTR2} ${M_ARGSTR3}"
 
-matlab -nodesktop -nosplash -r "compute_far_field ${M_ARGSTR}; exit;"
+M_ARGSTR1="'radius', ${RBEAD}, 'n_particle', ${N_PARTICLE},"
+M_ARGSTR2="'n_medium', ${N_MEDIUM}, 'wavelength', ${WAVELENGTH0},"
+M_ARGSTR3="'NA', ${NA}, 'polarisation', '${POLARISATION}',"
+M_ARGSTR4="'xOffset', ${XOFFSET}, 'yOffset', ${YOFFSET}, 'zOffset', ${ZOFFSET},"
+M_ARGSTR5="'ntheta', ${NTHETA}, 'nphi', ${NPHI}, 'Nmax', ${NMAX}"
+M_ARGSTR="${M_ARGSTR1} ${M_ARGSTR2} ${M_ARGSTR3} ${M_ARGSTR4} ${M_ARGSTR5}"
+M_CMDSTR="compute_far_field('${OUTPATH}', ${M_ARGSTR}); exit;"
+
+matlab -nodisplay -r "${M_CMDSTR}"
 
 echo ""
 echo "COMPUTATION DURATION: $(($SECONDS-START)) seconds"
@@ -104,7 +118,8 @@ echo ""
 
 P_ARGSTR1="${RBEAD} ${N_PARTICLE} ${NA} ${XOFFSET} ${YOFFSET} ${ZOFFSET}"
 P_ARGSTR2="${TRANS} ${BEAM} ${RMAX} ${SINE_BREAKDOWN} ${ELEV} ${AZIM}"
-P_ARGSTR="${P_ARGSTR1} ${P_ARGSTR2} ${PLOT_BASE} ${FIGNAME}"
+P_ARGSTR3="${PLOT_BASE} ${FIGNAME} ${SAVE} ${SHOW}"
+P_ARGSTR="${P_ARGSTR1} ${P_ARGSTR2} ${P_ARGSTR3}"
 
 python3 plot_farfield.py ${P_ARGSTR}
 

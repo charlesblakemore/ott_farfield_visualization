@@ -9,6 +9,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from skimage.restoration import unwrap_phase
+import unwrap
 
 import scipy.constants as constants
 
@@ -54,9 +55,13 @@ except:
 try:
     plot_base = str(sys.argv[13])
     figname = str(sys.argv[14])
+    save_fig = int(sys.argv[15])
+    show_fig = int(sys.argv[16])
 except:
     plot_base = ''
     figname = ''
+    save_fig = False
+    show_fig = True
 
 if not len(plot_base):
     plot_base = '/Users/manifestation/Stanford/beads/plots/ott_farfield/'
@@ -93,17 +98,19 @@ scat_imag = \
 #####################     OPTIONS      ###################################
 ##########################################################################
 
+# print(beam)
+# beam='inc'
 
-save_fig = True
-show_fig = False
+# save_fig = True
+# show_fig = True
 
 # plot_3d_sphere = True
 plot_3d_sphere = False
 
-manual_phase_plot_lims = (-3*np.pi, 3*np.pi)
-max_radiance_val = 6.0
+# manual_phase_plot_lims = (-np.pi, np.pi)
+max_radiance_val = 8.4
 
-# manual_phase_plot_lims = ()
+manual_phase_plot_lims = ()
 # max_radiance_val = 0.0
 
 
@@ -208,21 +215,33 @@ else:
 efield_plot_x = efield_plot[:,:,1] * np.cos(theta_grid) * np.cos(phi_grid) \
                 + efield_plot[:,:,2] * (-1) * np.sin(phi_grid)
 
+efield_plot_y = efield_plot[:,:,1] * np.cos(theta_grid) * np.sin(phi_grid) \
+                + efield_plot[:,:,2] * np.cos(phi_grid)
+
 radiance = np.sqrt( np.abs(efield_plot[:,:,0])**2 \
                     + np.abs(efield_plot[:,:,1])**2 \
                     + np.abs(efield_plot[:,:,2])**2 )
 
 radiancex = np.abs(efield_plot_x[:,:])
 phasex = np.angle(efield_plot_x[:,:])
-phasex_unwrap = unwrap_phase(phasex)
+phasex_unwrap = unwrap.unwrap(phasex)
+
+radiancey = np.abs(efield_plot_y[:,:])
+phasey = np.angle(efield_plot_y[:,:])
+phasey_unwrap = unwrap.unwrap(phasey)
+
 if transmitted:
-    center_phase = np.mean(phasex_unwrap[0,:])
+    center_phasex = np.mean(phasex_unwrap[0,:])
+    center_phasey = np.mean(phasey_unwrap[0,:])
 else:
-    center_phase = np.mean(phasex_unwrap[-1,:])
-phasex_unwrap -= center_phase
+    center_phasex = np.mean(phasex_unwrap[-1,:])
+    center_phasey = np.mean(phasey_unwrap[-1,:])
+
+phasex_unwrap -= center_phasex
+phasey_unwrap -= center_phasey
 
 if not max_radiance_val:
-    max_radiance_val = np.max(radiancex)
+    max_radiance_val = np.max([np.max(radiancex), np.max(radiancey)])
 
 
 # max_val = np.max(np.abs(efield_inc).flatten())
@@ -238,14 +257,14 @@ if not max_radiance_val:
 # input()
 
 
+
+
+
+
+
 ##########################################################################
 ##########################    2D PLOTTING    #############################
 ##########################################################################
-
-bu.make_all_pardirs(os.path.join(plot_base, 'derp.file'), confirm=False)
-if not len(figname):
-    bu.make_all_pardirs(os.path.join(plot_base, sim_id, 'derp.file'), confirm=False)
-
 
 fig1, axarr = plt.subplots(1, 2, figsize=(12,6), sharex=True, sharey=True,\
                            subplot_kw=dict(projection='polar'))
@@ -381,7 +400,176 @@ if save_fig:
     print('Saving figure to:')
     print(f'     {savepath}')
     print()
+    bu.make_all_pardirs(savepath,confirm=False)
     fig1.savefig(savepath, dpi=150)
+
+
+plt.figure()
+plt.plot(r_grid[:,0], phasex_unwrap[:,0])
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##########################################################################
+##########################    2D PLOTTING    #############################
+##########################################################################
+
+fig2, axarr2 = plt.subplots(1, 2, figsize=(12,6), sharex=True, sharey=True,\
+                           subplot_kw=dict(projection='polar'))
+
+if title:
+    fig2.suptitle('Image from Output Optics: ' + title, \
+                  fontsize=16, fontweight='bold')
+
+### Plot a contour for the sine approximation breakdown (with a label)
+### if so desired
+if plot_sin_approx_breakdown:
+    derp_phi = np.linspace(0, 2.0*np.pi, 1000)
+    derp_r = np.abs(np.pi/6.0 * ray_tracing_matrix[1,0]) * np.ones(1000)
+    for i in range(2):
+        line = axarr2[i].plot(derp_phi, derp_r, ls='--', lw=3, \
+                             color='w', zorder=4)
+        bu.labelLine(axarr2[i].get_lines()[0], 3*np.pi/2, \
+                     y_offset=-0.005, label='$\\pi/6$ half-cone', \
+                     va='bottom', zorder=99)
+
+### Plot the radiance and phase of the electric field specifically 
+### definining the filled contour levels to allow for algorithmic 
+### construction of the colorbars
+rad_levels2 = np.linspace(0, max_radiance_val, 501)
+rad_cont2 = axarr2[0].pcolormesh(phi_grid, r_grid, radiancey, \
+                                 vmin=0, vmax=max_radiance_val, \
+                                 cmap='plasma', zorder=3, \
+                                 shading='gouraud')
+# phase_levels = np.linspace(-np.pi, np.pi, 501)
+# phase_cont = axarr[1].contourf(phi_grid, r_grid, phasex, \
+#                                levels=phase_levels, \
+#                                cmap='plasma', zorder=3)
+inds = r_grid < rmax
+if len(manual_phase_plot_lims):
+    min_phase = np.floor(manual_phase_plot_lims[0]/np.pi)
+    max_phase = np.ceil(manual_phase_plot_lims[1]/np.pi)
+else:
+    min_phase = np.floor(np.min(phasey_unwrap[inds])/np.pi)
+    max_phase = np.ceil(np.max(phasey_unwrap[inds])/np.pi)
+phase_levels2 = np.linspace(min_phase, max_phase, 501)*np.pi
+phase_cont2 = axarr2[1].contourf(phi_grid, r_grid, phasey_unwrap, \
+                                 levels=phase_levels2, \
+                                 cmap='plasma', zorder=3)
+phase_ticks = []
+phase_ticklabels = []
+for i in range(int(max_phase - min_phase)+1):
+    phase_val = min_phase + i
+    phase_ticks.append(phase_val*np.pi)
+    if not phase_val:
+        phase_ticklabels.append('0')
+    elif phase_val == 1:
+        phase_ticklabels.append('$\\pi$')
+    elif phase_val == -1:
+        phase_ticklabels.append('$-\\pi$')
+    else:
+        phase_ticklabels.append(f'{int(phase_val):d}$\\pi$')
+
+### Clean up the axes and labels that we don't really care about
+for i in range(2):
+    axarr2[i].set_rmax(rmax)
+    axarr2[i].set_yticks([rmax])
+    axarr2[i].set_yticklabels([])
+    axarr2[i].set_xticks([])
+    axarr2[i].grid(False)
+
+### Add a note with the plotted value of rmax, i.e. the size of the
+### circular aperture displayed at the end
+fig2.text(0.5, 0.1, f'{100*rmax:0.1f} cm radius\naperture', fontsize=16, \
+          ha='center', va='center')
+
+### Add a note with the relative positions of beam and scatterer, noting
+### that the offset in the filename/simulation is BEAM relative to the
+### MS at the origin, so that we need to invert the coordinates. I also
+### want consistent sizing so the plots can be combined into a movie
+val_str = 'MS position:\n('
+for var in [xOffset, yOffset, zOffset]:
+    if var > 0:
+        sign_str = '-'
+    else:
+        sign_str = ' '
+    val_str += sign_str + f'{np.abs(var)*1e6:0.2f}, '
+val_str = val_str[:-2] + ')'
+
+ms_label = fig2.text(0.5, 0.85, f'{val_str} $\\mu$m', \
+                     fontsize=12, ha='center', va='center')
+ms_label.set(fontfamily='monospace')
+
+### These labels need to have the same vertical extent otherwise they
+### fuck up with the axis sizing
+axarr2[0].set_title('Radiance')
+axarr2[1].set_title('Phase')
+
+### Do a tight_layout(), but then pull in the sides of the figure a bit
+### to make room for colorbars
+fig2.tight_layout()
+fig2.subplots_adjust(left=0.075, right=0.925, top=0.85, bottom=0.05)
+
+### Make the colorbars explicitly first by defining and inset axes
+### and then plotting the colorbar in the new inset
+rad_inset = inset_axes(axarr2[0], width="4%", height="85%", \
+                       loc='center left', \
+                       bbox_to_anchor=(-0.07, 0, 1, 1), \
+                       bbox_transform=axarr2[0].transAxes, \
+                       borderpad=0)
+nlabel = 5
+rad_ticks = np.linspace(0, max_radiance_val, nlabel)
+rad_cbar = fig2.colorbar(rad_cont2, cax=rad_inset, \
+                         ticks=rad_ticks, format='%0.1f')
+rad_inset.yaxis.set_ticks_position('left')
+
+### Same thing for the phase
+phase_inset = inset_axes(axarr2[1], width="4%", height="85%", \
+                         loc='center right', \
+                         bbox_to_anchor=(0.07, 0, 1, 1), \
+                         bbox_transform=axarr2[1].transAxes, \
+                         borderpad=0)
+# phase_cbar = fig1.colorbar(phase_cont, cax=phase_inset, \
+#                            ticks=[-np.pi, 0, np.pi])
+# phase_cbar.ax.set_yticklabels(['$-\\pi$', '0', '$+\\pi$'])
+phase_cbar = fig2.colorbar(phase_cont2, cax=phase_inset, ticks=phase_ticks)
+phase_cbar.ax.set_yticklabels(phase_ticklabels)
+
+if save_fig:
+    if not len(figname):
+        if transmitted:
+            figname = f'{sim_id}/{beam}beam_output_image_2.png'
+        else:
+            figname = f'{sim_id}/{beam}beam_reflected_output_image_2.png'
+    figname = figname.replace('.svg', '_2.svg')
+    figname = figname.replace('.png', '_2.png')
+    savepath = os.path.join(plot_base, figname)
+    print('Saving figure to:')
+    print(f'     {savepath}')
+    print()
+    bu.make_all_pardirs(savepath,confirm=False)
+    fig2.savefig(savepath, dpi=150)
+
+
+
+
+
+
+
+
 
 
 

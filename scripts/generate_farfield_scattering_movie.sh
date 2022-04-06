@@ -25,7 +25,8 @@ make_frame(){
     ##########################################################################
 
     ### Custom saving options (for making movies and other things)
-    PLOT_BASE="/home/cblakemore/plots/ott_farfield/"
+    # PLOT_BASE="/home/cblakemore/plots/ott_farfield/"
+    PLOT_BASE="/Users/manifestation/Stanford/beads/plots/ott_farfield"
     TITLE="zsweep_0-50um_trans"
     SAVEPATH="${PLOT_BASE}${TITLE}"
 
@@ -72,6 +73,9 @@ make_frame(){
     ######################    PYTHON/PLOT SETTINGS    ########################
     ##########################################################################
 
+    SAVE=1
+    SHOW=0
+
     ### NOTE: YOU WILL NEED TO EDIT THE PYTHON FILE YOURSELF IF YOU WANT TO
     ### CHANGE THE RAY-TRACING ANALYSIS. THE INITIAL HARD-CODED IMPLEMENTATION
     ### IS PRETTY SIMPLE
@@ -101,15 +105,20 @@ make_frame(){
     ZOFFSET_VAL=$(bc <<< "scale=2; $START_Z + ($i * $DELTA_Z)")
     ZOFFSET=$(printf "%0.2fe-6" "$ZOFFSET_VAL")
 
-    M_ARGSTR1="${RBEAD} ${N_PARTICLE} ${N_MEDIUM} ${WAVELENGTH0}"
-    M_ARGSTR2="${NA} ${POLARISATION} ${XOFFSET} ${YOFFSET} ${ZOFFSET}"
-    M_ARGSTR3="${NTHETA} ${NPHI} ${NMAX} ${OUTPATH}"
-    M_ARGSTR="${M_ARGSTR1} ${M_ARGSTR2} ${M_ARGSTR3}"
-    matlab -nodisplay -r "compute_far_field ${M_ARGSTR}; exit;"
+    M_ARGSTR1="'radius', ${RBEAD}, 'n_particle', ${N_PARTICLE},"
+    M_ARGSTR2="'n_medium', ${N_MEDIUM}, 'wavelength', ${WAVELENGTH0},"
+    M_ARGSTR3="'NA', ${NA}, 'polarisation', '${POLARISATION}',"
+    M_ARGSTR4="'xOffset', ${XOFFSET}, 'yOffset', ${YOFFSET}, 'zOffset', ${ZOFFSET},"
+    M_ARGSTR5="'ntheta', ${NTHETA}, 'nphi', ${NPHI}, 'Nmax', ${NMAX}"
+    M_ARGSTR="${M_ARGSTR1} ${M_ARGSTR2} ${M_ARGSTR3} ${M_ARGSTR4} ${M_ARGSTR5}"
+    M_CMDSTR="compute_far_field('${OUTPATH}', ${M_ARGSTR}); exit;"
+
+    matlab -nodisplay -r "${M_CMDSTR}"
 
     P_ARGSTR1="${RBEAD} ${N_PARTICLE} ${NA} ${XOFFSET} ${YOFFSET} ${ZOFFSET}"
     P_ARGSTR2="${TRANS} ${BEAM} ${RMAX} ${SINE_BREAKDOWN} ${ELEV} ${AZIM}"
-    P_ARGSTR="${P_ARGSTR1} ${P_ARGSTR2} ${SAVEPATH} ${FIGNAME}"
+    P_ARGSTR3="${SAVEPATH} ${FIGNAME} ${SAVE} ${SHOW}"
+    P_ARGSTR="${P_ARGSTR1} ${P_ARGSTR2} ${P_ARGSTR3}"
     python3 plot_farfield.py ${P_ARGSTR}
 
 }

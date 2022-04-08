@@ -1,6 +1,7 @@
-function []=compute_far_field(datapath, args)
+function [saveName] = compute_far_field(args)
     arguments
-        datapath string
+        args.datapath string = '../raw_data/'
+        args.include_id logical = false
         args.radius double = 2.35e-6
         args.n_particle double = 1.39
         args.n_medium double = 1.00
@@ -9,11 +10,17 @@ function []=compute_far_field(datapath, args)
         args.xOffset double = 0.0e-6
         args.yOffset double = 0.0e-6
         args.zOffset double = 0.0e-6
+        args.thetaMin double = 0.0
+        args.thetaMax double = pi
         args.ntheta double = 101
         args.nphi double = 101
         args.Nmax double = 50
         args.polarisation string = 'X'
     end
+
+if strcmp(args.datapath, '../raw_data/')
+    args.include_id = true
+end
 
 %%% Handle the arguments properly for both internal matlab execution
 %%% as well as command-line execution where arguments are necessarily
@@ -29,11 +36,17 @@ else
     polarisation = [1 0];
 end
 
-saveFormatSpec = 'r%0.2fum_n%0.2f_na%0.3f_x%0.2f_y%0.2f_z%0.2f';
+saveFormatSpec = 'r%0.2fum_n%0.2f_na%0.3f_x%0.2f_y%0.2f_z%0.2f_Nmax%i';
 saveName = strrep(sprintf(saveFormatSpec, args.radius*1e6, ...
                           args.n_particle, args.NA, ...
                           args.xOffset*1e6, args.yOffset*1e6, ...
-                          args.zOffset*1e6), '.', '_');
+                          args.zOffset*1e6, args.Nmax), '.', '_');
+
+if args.include_id
+    saveName = strcat(strip(args.datapath,'right','/'), '/', saveName);
+else
+    saveName = args.datapath;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,8 +92,8 @@ totbeam = sbeam.totalField(ibeam);
 %%% of MS within a trap
 
 %%% Construct the points we want to sample over the full unit sphere
-thetapts = linspace(0,pi,args.ntheta);
-phipts = linspace(0,2*pi,args.nphi);
+thetapts = linspace(args.thetaMin, args.thetaMax, args.ntheta);
+phipts = linspace(0, 2*pi, args.nphi);
 
 %%% Build up a 2x(ntheta*nphi) array of all sampled points since that's
 %%% how the OTT utility function samples the electric field
@@ -107,11 +120,14 @@ totbeam.basis = 'outgoing';
 [Et_far, Ht_far] = totbeam.farfield(farpts(1,:),farpts(2,:));
 
 %%% Write all that shit to a few files
-mkdir('../raw_data', saveName)
+mkdir(saveName);
+disp(' ')
+disp('Writing data to:');
+disp(sprintf('    %s\n', saveName));
 
-formatSpec = '../raw_data/%s/farfield_%s_%s.txt';
+formatSpec = '%s/farfield_%s_%s.txt';
 
-writematrix(farpts, sprintf('../raw_data/%s/farfield_points.txt', saveName));
+writematrix(farpts, sprintf('%s/farfield_points.txt', saveName));
 
 writematrix(real(Ei_far), sprintf(formatSpec, saveName, 'inc', 'real'));
 writematrix(imag(Ei_far), sprintf(formatSpec, saveName, 'inc', 'imag'));
@@ -121,9 +137,6 @@ writematrix(imag(Es_far), sprintf(formatSpec, saveName, 'scat', 'imag'));
 
 writematrix(real(Et_far), sprintf(formatSpec, saveName, 'tot', 'real'));
 writematrix(imag(Et_far), sprintf(formatSpec, saveName, 'tot', 'imag'));
-
-
-
 
 
 end

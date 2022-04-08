@@ -17,7 +17,7 @@ plt.rcParams.update({'font.size': 14})
 
 
 
-base_plotting_directory = os.path.expanduser('~/plots/')
+base_plotting_directory = os.path.abspath('../plots/')
 
 
 

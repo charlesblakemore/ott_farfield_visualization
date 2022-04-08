@@ -16,7 +16,7 @@ subsequent scattering are all performed by MATLAB, making use of
 the T-matrix formalism. See the link below for a complete 
 description of the software together with accompanying literature.
 
-`Optical Tweezers Toolbox <https://www.mathworks.com/matlabcentral/fileexchange/73541-ott-optical-tweezers-toolbox>`_ - Lenton, Isaac C. D., et al., 
+`Optical Tweezers Toolbox <https://www.mathworks.com/matlabcentral/fileexchange/73541-ott-optical-tweezers-toolbox>`_ - Lenton, Isaac C. D., et al.
 
 Install
 -------

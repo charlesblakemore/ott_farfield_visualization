@@ -56,7 +56,7 @@ max_radiance_val = 0.0
 manual_phase_plot_lims = (-np.pi, 3.0*np.pi)
 
 
-simulation_parameters['zOffset'] = -300.0e-6
+simulation_parameters['zOffset'] = -150.0e-6
 
 ##########################################################################
 ##########################################################################

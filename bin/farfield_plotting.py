@@ -167,7 +167,7 @@ def plot_2D_farfield(theta_grid, phi_grid, efield_rtp, \
                      max_radiance_val=0.0, \
                      unwrap_phase=True, transmitted=True, \
                      manual_phase_plot_lims=(), \
-                     ms_position=None, rmax=0.01, phase_sign=1.0,  \
+                     label_position=None, rmax=0.01, phase_sign=1.0,  \
                      plot_sin_approx_breakdown=False, \
                      ray_tracing_matrix=get_simple_ray_tracing_matrix(), \
                      show=True, save=False, \
@@ -176,6 +176,13 @@ def plot_2D_farfield(theta_grid, phi_grid, efield_rtp, \
     polarisation = simulation_parameters['polarisation']
     wavelength = simulation_parameters['wavelength']
     zOffset = simulation_parameters['zOffset']
+
+    if label_position:
+        ms_position = [simulation_parameters['xOffset'], \
+                       simulation_parameters['yOffset'], \
+                       simulation_parameters['zOffset']]
+    else:
+        ms_position = None
 
     radiance, phase = _project_efield(theta_grid, phi_grid, efield_rtp, \
                              polarisation, transmitted, unwrap_phase)
@@ -349,7 +356,7 @@ def plot_3D_farfield(theta_grid, phi_grid, efield_rtp, \
                      max_radiance_val=0.0, \
                      unwrap_phase=True, transmitted=True, \
                      manual_phase_plot_lims=(), \
-                     ms_position=None, rmax=0.01, phase_sign=1.0, \
+                     label_position=None, rmax=0.01, phase_sign=1.0, \
                      ray_tracing_matrix=get_simple_ray_tracing_matrix(), \
                      view_elev=+40.0, view_azim=20.0, \
                      show=True, save=False, \
@@ -358,6 +365,25 @@ def plot_3D_farfield(theta_grid, phi_grid, efield_rtp, \
     polarisation = simulation_parameters['polarisation']
     wavelength = simulation_parameters['wavelength']
     zOffset = simulation_parameters['zOffset']
+
+    if label_position:
+        ms_position = [simulation_parameters['xOffset'], \
+                       simulation_parameters['yOffset'], \
+                       simulation_parameters['zOffset']]
+    else:
+        ms_position = None
+
+    if beam == 'inc':
+        title = 'Incident Gaussian Beam'
+    elif beam == 'scat':
+        title = 'Scattered Beam'
+    else:
+        title = 'Total Beam'
+
+    if transmitted:
+        title += ', Transmitted Hemisphere'
+    else:
+        title += ', Back-reflected Hemisphere'
 
     radiance, phase = _project_efield(theta_grid, phi_grid, efield_rtp, \
                              polarisation, transmitted, unwrap_phase)

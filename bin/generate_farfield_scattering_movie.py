@@ -41,18 +41,19 @@ simulation_parameters = {
 
 param_to_sweep = 'zOffset'
 # param_array = np.linspace(0.0, -100.0, 101)
-param_array = np.linspace(0.0, -100.0, 2)
+param_array = np.linspace(0.0, -100.0, 3)
 param_scale = 1e-6
 save_suffix = '_um'
 # save_suffix = ''
 
+movie_name = 'zsweep_0-50um'
 
 
 
 beam = 'tot'
 transmitted = True
-rmax = 0.05
-save_fig = False
+rmax = 0.005
+save_fig = True
 show_fig = True
 
 # max_radiance_val = 8.4
@@ -80,40 +81,47 @@ else:
 param_ind = 0
 for param_ind in tqdm(range(len(param_array))):
 
+    ### Get the current value of the swept parameter
     param_val = param_array[param_ind]
     param_str = f'{param_to_sweep}_{int(param_val):d}{save_suffix}'
     sys.stdout.flush()
     param_ind += 1
 
+    ### Adjust the savepath to included information about the current
+    ### parameter values
     simulation_parameters['datapath'] \
         = os.path.join(base_data_path, param_str)
     simulation_parameters[param_to_sweep] \
         = float(param_scale*param_val)
 
+    ### Build the MATLAB formatted argument list from the dictionary
+    ### defined at the top of this script
     arglist = [[key, simulation_parameters[key]] \
                 for key in simulation_parameters.keys()]
+
+    ### Start the MATLAB engine and run the computation
     engine = matlab.engine.start_matlab()
     matlab_datapath \
         = engine.compute_far_field(\
             *[arg for argtup in arglist for arg in argtup], \
             nargout=1, background=False)
 
+    ### Load the data that MATLAB computed and saved
     theta_grid, r_grid, efield \
         = farfield_plotting.load_data(matlab_datapath, beam=beam, \
                                       transmitted=transmitted)
 
-
+    ### Update this label for movie frames
     ms_position = [simulation_parameters['xOffset'], \
                    simulation_parameters['yOffset'], \
                    simulation_parameters['zOffset']]
 
+    ### Plot everything!
+    figname = os.path.join(farfield_plotting.base_plotting_directory, \
+                           movie_name, f'frame_{param_ind:04d}.png')
     farfield_plotting.plot_2D_farfield(
-        theta_grid, r_grid, efield, figname=f'test/frame_{param_ind:04d}.png', \
+        theta_grid, r_grid, efield, simulation_paramters, \
         ms_position=ms_position, rmax=rmax, title=title, \
-        polarisation=simulation_parameters['polarisation'], \
-        save=save_fig, show=show_fig)
+        manual_phase_plot_lims=manual_phase_plot_lims, \
+        figname=figname, save=save_fig, show=show_fig)
 
-stop = time.time()
-
-print(f'Total sim time: {stop-start:0.2f}')
-print()

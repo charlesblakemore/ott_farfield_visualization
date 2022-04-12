@@ -25,10 +25,10 @@ base_plotting_directory = os.path.expanduser('~/plots/')
 #####################   RAY TRACING      #################################
 ##########################################################################
 
-def _ray_tracing_propagation(distance, index=1.0):
+def ray_tracing_propagation(distance, index=1.0):
     return np.array([[1, 0], [distance/index, 1]])
 
-def _ray_tracing_thin_lens(focal_length):
+def ray_tracing_thin_lens(focal_length):
     return np.array([[1, -1.0/focal_length], [0, 1]])
 
 
@@ -41,13 +41,13 @@ def get_simple_ray_tracing_matrix():
     simple treatment. Zemax will do better eventually
     '''
 
-    T1 = _ray_tracing_propagation(50.8e-2, 1.0) # Propagation to parabolic mirror
-    La = _ray_tracing_thin_lens(50.8e-2)        # Recollimation
-    T2 = _ray_tracing_propagation(90.8e-2, 1.0) # To telescope
-    Lb = _ray_tracing_thin_lens(40.0e-2)        # First telescope lens
-    T3 = _ray_tracing_propagation(50.0e-2, 1.0) # refracting telescope configuration
-    Lc = _ray_tracing_thin_lens(10.0e-2)        # First telescope lens
-    T4 = _ray_tracing_propagation(10.0e-2, 1.0) # projection onto QPD
+    T1 = ray_tracing_propagation(50.8e-3, 1.0) # Propagation to parabolic mirror
+    La = ray_tracing_thin_lens(50.8e-3)        # Recollimation
+    T2 = ray_tracing_propagation(90.8e-3, 1.0) # To telescope
+    Lb = ray_tracing_thin_lens(40.0e-3)        # First telescope lens
+    T3 = ray_tracing_propagation(50.0e-3, 1.0) # refracting telescope configuration
+    Lc = ray_tracing_thin_lens(10.0e-3)        # First telescope lens
+    T4 = ray_tracing_propagation(10.0e-3, 1.0) # projection onto QPD
 
     return T4 @ Lc @ T3 @ Lb @ T2 @ La @ T1
 
@@ -122,24 +122,8 @@ def load_data(path, beam='tot', transmitted=True):
 
 
 
-
-
-
-
-##########################################################################
-##########################    2D PLOTTING    #############################
-##########################################################################
-
-
-def plot_2D_farfield(theta_grid, phi_grid, efield_rtp, title='', \
-                     polarisation='X', max_radiance_val=0.0, \
-                     unwrap_phase=True, transmitted=True, \
-                     manual_phase_plot_lims=(), \
-                     ms_position=None, rmax=5.0e-2, \
-                     plot_sin_approx_breakdown=False, \
-                     ray_tracing_matrix=get_simple_ray_tracing_matrix(), \
-                     show=True, save=False, \
-                     figname='', fig_id='', beam=''):
+def _project_efield(theta_grid, phi_grid, efield_rtp, polarisation, \
+                    transmitted, unwrap_phase): 
 
     ### First convert the spherical components of the electric field to
     ### cartesian components to match our usual linearly polarized scheme
@@ -163,6 +147,44 @@ def plot_2D_farfield(theta_grid, phi_grid, efield_rtp, title='', \
     else:
         center_phase = np.mean(phase[-1,:])
     phase -= center_phase
+
+    return radiance, phase
+
+
+
+
+
+
+
+
+##########################################################################
+##########################    2D PLOTTING    #############################
+##########################################################################
+
+
+def plot_2D_farfield(theta_grid, phi_grid, efield_rtp, \
+                     simulation_parameters, title='', \
+                     max_radiance_val=0.0, \
+                     unwrap_phase=True, transmitted=True, \
+                     manual_phase_plot_lims=(), \
+                     ms_position=None, rmax=0.01, phase_sign=1.0,  \
+                     plot_sin_approx_breakdown=False, \
+                     ray_tracing_matrix=get_simple_ray_tracing_matrix(), \
+                     show=True, save=False, \
+                     figname='', fig_id='', beam=''):
+
+    polarisation = simulation_parameters['polarisation']
+    wavelength = simulation_parameters['wavelength']
+    zOffset = simulation_parameters['zOffset']
+
+    radiance, phase = _project_efield(theta_grid, phi_grid, efield_rtp, \
+                             polarisation, transmitted, unwrap_phase)
+    phase *= phase_sign
+
+    ### Correct for sampling the electric field on the wrong farfield 
+    ### sphere, since the coordinates are centered on the scatterer
+    ### but the beam is often translated relative to the scatterer
+    phase -= theta_grid**2 * zOffset * np.pi/wavelength
 
     ### Project the theta angular coordinate of the transmitted rays to a
     ### a polar radial coordinate, assuming phi is maintained and ignoring
@@ -235,7 +257,7 @@ def plot_2D_farfield(theta_grid, phi_grid, efield_rtp, title='', \
 
     ### Add a note with the plotted value of rmax, i.e. the size of the
     ### circular aperture displayed at the end
-    fig.text(0.5, 0.1, f'{100*rmax:0.1f} cm radius\naperture', fontsize=16, \
+    fig.text(0.5, 0.1, f'{1000*rmax:0.1f} mm radius\naperture', fontsize=16, \
               ha='center', va='center')
 
     ### Add a note with the relative positions of beam and scatterer, noting
@@ -303,7 +325,7 @@ def plot_2D_farfield(theta_grid, phi_grid, efield_rtp, title='', \
                             f'{beam}beam_output_image.png')
             else:
                 figname = os.path.join(fig_id, \
-                            f'{beam}beam_reflected_output_image.svg')
+                            f'{beam}beam_reflected_output_image.png')
         savepath = os.path.join(base_plotting_directory, figname)
         print('Saving figure to:')
         print(f'     {savepath}')
@@ -318,6 +340,160 @@ def plot_2D_farfield(theta_grid, phi_grid, efield_rtp, title='', \
 
 
 
+
+
+
+
+def plot_3D_farfield(theta_grid, phi_grid, efield_rtp, \
+                     simulation_parameters, title='', \
+                     max_radiance_val=0.0, \
+                     unwrap_phase=True, transmitted=True, \
+                     manual_phase_plot_lims=(), \
+                     ms_position=None, rmax=0.01, phase_sign=1.0, \
+                     ray_tracing_matrix=get_simple_ray_tracing_matrix(), \
+                     view_elev=+40.0, view_azim=20.0, \
+                     show=True, save=False, \
+                     figname='', fig_id='', beam=''):
+
+    polarisation = simulation_parameters['polarisation']
+    wavelength = simulation_parameters['wavelength']
+    zOffset = simulation_parameters['zOffset']
+
+    radiance, phase = _project_efield(theta_grid, phi_grid, efield_rtp, \
+                             polarisation, transmitted, unwrap_phase)
+    phase *= phase_sign
+
+    ### Correct for sampling the electric field on the wrong farfield 
+    ### sphere, since the coordinates are centered on the scatterer
+    ### but the beam is often translated relative to the scatterer
+    phase -= theta_grid**2 * zOffset * np.pi/wavelength
+
+    ### Make an array of colors corresponding to the radiance of each
+    ### ray in the output farfield
+    if not max_radiance_val:
+        max_radiance_val = np.max(radiance)
+    radiance_norm = colors.Normalize(vmin=0, vmax=max_radiance_val)
+    radiance_smap = cm.ScalarMappable(norm=radiance_norm, cmap='plasma')
+    radiance_colors = radiance_smap.to_rgba(radiance)
+
+    ### Project the theta angular coordinate of the transmitted rays to a
+    ### a polar radial coordinate, assuming phi is maintained and ignoring
+    ### the angular distribution of the resultant rays (which should vanish
+    ### for proper alignment)
+    r_grid = np.abs( ray_tracing_matrix[1,0] * theta_grid )
+
+    # misalignment_phase = (ray_tracing_matrix[0,0] * theta_grid * 10.0e-3)\
+    #                         *2.0*np.pi/1064.0e-9
+
+    inds = r_grid <= rmax
+    if len(manual_phase_plot_lims):
+        inds *= ( (phase > manual_phase_plot_lims[0]) * \
+                    (phase < manual_phase_plot_lims[1]) )
+    radiance_colors[np.logical_not(inds)] = (1.0, 1.0, 1.0, 0.0)
+
+    X = r_grid * np.cos(phi_grid)
+    Y = r_grid * np.sin(phi_grid)
+    Z = phase #+ misalignment_phase
+
+    fig, ax = plt.subplots(1, 1, figsize=(9,7), \
+                           subplot_kw=dict(projection='3d'))
+
+    # if title:
+    #     fig.suptitle('Image from Output Optics: ' + title, \
+    #                   fontsize=16, fontweight='bold')
+
+    wavefront_surf = ax.plot_surface(1e3*X, 1e3*Y, Z, \
+                        rstride=1, cstride=1, \
+                        facecolors=radiance_colors, linewidth=0, \
+                        antialiased=False, shade=False)
+
+    ax.view_init(elev=view_elev, azim=view_azim)
+
+    ax.set_xlabel('X coord [mm]', labelpad=10)
+    ax.set_ylabel('Y coord [mm]', labelpad=10)
+    ax.set_zlabel('Phase [rad]', labelpad=5)
+
+    ax.set_xlim(-1e3*rmax, 1e3*rmax)
+    ax.set_ylim(-1e3*rmax, 1e3*rmax)
+
+
+    if len(manual_phase_plot_lims):
+        min_phase = np.floor(manual_phase_plot_lims[0]/np.pi)
+        max_phase = np.ceil(manual_phase_plot_lims[1]/np.pi)
+    else:
+        min_phase = np.floor(np.min(phase[inds])/np.pi)
+        max_phase = np.ceil(np.max(phase[inds])/np.pi)
+
+    phase_ticks = []
+    phase_ticklabels = []
+    for i in range(int(max_phase - min_phase)+1):
+        phase_val = min_phase + i
+        phase_ticks.append(phase_val*np.pi)
+        if not phase_val:
+            phase_ticklabels.append('0')
+        elif phase_val == 1:
+            phase_ticklabels.append('$\\pi$')
+        elif phase_val == -1:
+            phase_ticklabels.append('$-\\pi$')
+        else:
+            phase_ticklabels.append(f'{int(phase_val):d}$\\pi$')
+
+    ax.set_zlim(min_phase, max_phase)
+    ax.set_zticks(phase_ticks)
+    ax.set_zticklabels(phase_ticklabels)
+
+    # plt.subplots_adjust(left=0, right=1.0, top=1.0, bottom=0.05)
+    fig.tight_layout()
+
+
+    # ### Add a note with the plotted value of rmax, i.e. the size of the
+    # ### circular aperture displayed at the end
+    # fig.text(0.5, 0.1, f'{100*rmax:0.1f} cm radius\naperture', fontsize=16, \
+    #           ha='center', va='center')
+
+    # ### Add a note with the relative positions of beam and scatterer, noting
+    # ### that the offset in the filename/simulation is BEAM relative to the
+    # ### MS at the origin, so that we need to invert the coordinates. I also
+    # ### want consistent sizing so the plots can be combined into a movie
+    # if ms_position is not None:
+    #     try:
+    #         iter(ms_position)
+    #     except Exception:
+    #         raise IOError('MS position needs to be iterable')
+    #     assert len(ms_position) == 3, 'MS position should 3 coordinates'
+    #     val_str = 'MS position:\n('
+    #     for var in ms_position:
+    #         if var > 0:
+    #             sign_str = '-'
+    #         else:
+    #             sign_str = ' '
+    #         val_str += sign_str + f'{np.abs(var)*1e6:0.2f}, '
+    #     val_str = val_str[:-2] + ')'
+
+    #     ms_label = fig.text(0.5, 0.85, f'{val_str} $\\mu$m', \
+    #                          fontsize=12, ha='center', va='center')
+    #     ms_label.set(fontfamily='monospace')
+
+
+    if save:
+        if not len(figname):
+            if transmitted:
+                figname = os.path.join(fig_id, \
+                            f'{beam}beam_output_image_3d.png')
+            else:
+                figname = os.path.join(fig_id, \
+                            f'{beam}beam_reflected_output_image_3d.png')
+        savepath = os.path.join(base_plotting_directory, figname)
+        print('Saving figure to:')
+        print(f'     {savepath}')
+        print()
+        _make_all_pardirs(savepath,confirm=False)
+        fig.savefig(savepath, dpi=150)
+
+    if show:
+        plt.show()
+
+    return fig, ax
 
 
 
@@ -418,5 +594,7 @@ def _make_all_pardirs(path, confirm=True):
 
 
 
+def determine_Nmax(offset, Nmax_min=100, Nmax_max=300):
+    return None
 
 

@@ -19,7 +19,7 @@ function [saveName] = compute_far_field(args)
     end
 
 if strcmp(args.datapath, '../raw_data/')
-    args.include_id = true
+    args.include_id = true;
 end
 
 %%% Handle the arguments properly for both internal matlab execution
@@ -81,7 +81,14 @@ intbeam = Tint * ibeam;
 totbeam = sbeam.totalField(ibeam);
 
 
-
+%%% Translate back to the origin after doing the scattering, since the 
+%%% farfield imaging is aligned to the optical focus, not the scatterer
+% ibeam = ibeam.translateXyz([-args.xOffset; -args.yOffset; +args.zOffset], ...
+%                             'Nmax', args.Nmax);
+% sbeam = sbeam.translateXyz([-args.xOffset; -args.yOffset; +args.zOffset], ...
+%                             'Nmax', args.Nmax);
+% totbeam = totbeam.translateXyz([-args.xOffset; -args.yOffset; +args.zOffset], ...
+%                                 'Nmax', args.Nmax);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%     FAR FIELD     %%%%%%%%%%%%%%%%%%%%%%%%

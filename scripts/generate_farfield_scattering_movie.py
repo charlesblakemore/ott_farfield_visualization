@@ -33,9 +33,9 @@ simulation_parameters = {
                    'zOffset': 0.0e-6, \
                   'halfCone': float(np.pi/6), \
                     'ntheta': 301, \
-                      'nphi': 101, \
+                      'nphi': 151, \
               'polarisation': 'X', \
-                      'Nmax': 30, \
+                      'Nmax': 200, \
                 'resimulate': True
 }
 
@@ -43,16 +43,17 @@ simulation_parameters = {
 
 plot_parameters = {
                       'beam': 'tot', \
-                      'rmax': 0.004, \
+                      'rmax': 0.006, \
                       'save': True, \
                       'show': False, \
                    'plot_2D': True, \
                    'plot_3D': True, \
                  'view_elev': -40.0, \
                  'view_azim': 20.0, \
-          'max_radiance_val': 25.0, \
+        'max_radiance_trans': 25.0, \
+         'max_radiance_refl': 0.12, \
               'unwrap_phase': True, \
-    'manual_phase_plot_lims': (-2.0*np.pi, 2.0*np.pi), \
+    'manual_phase_plot_lims': (-2.0*np.pi, 4.0*np.pi), \
             'label_position': True, \
                    'verbose': True
 }
@@ -60,11 +61,12 @@ plot_parameters = {
 
 
 
-
+video_frame_rate = 10
+nframes = 101
 
 param_to_sweep = 'zOffset'
 # param_array = np.linspace(0.0, -100.0, 101)
-param_array = np.linspace(0.0, -50.0, 51)
+param_array = np.linspace(0.0, -50.0, nframes)[::-1]
 param_scale = 1e-6
 save_suffix = '_um'
 # save_suffix = ''
@@ -152,6 +154,16 @@ for param_ind in tqdm(range(len(param_array))):
                                    f'frame_{param_ind:04d}.png')
     ott_plotting.plot_3D_farfield(
         theta_grid_refl, r_grid_refl, efield_refl, simulation_parameters, \
-        transmitted=True, ray_tracing_matrix=ray_tracing, \
+        transmitted=False, ray_tracing_matrix=ray_tracing, \
         **{**plot_parameters, 'figname': figname_refl_3D})
+
+
+
+print()
+print('Converting .png frames to .mp4 video...')
+
+for movie_type in ['trans', 'refl', 'trans_3d', 'refl_3d']:
+    ott_plotting.make_movie(os.path.join(movie_name, movie_type), \
+                            framerate=video_frame_rate)
+
 

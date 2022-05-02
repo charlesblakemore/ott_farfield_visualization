@@ -1,4 +1,4 @@
-import os, math, sys
+import os, math, sys, re, fnmatch
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -128,6 +128,72 @@ def _make_all_pardirs(path, confirm=True):
 
 
 
+def _find_str(str):
+    '''finds the index from the standard file name format'''
+    idx_offset = 1e10 # Large number to ensure sorting by index first
+
+    fname, _ = os.path.splitext(str)
+    
+    endstr = re.findall(r"\d+mV_[\d+Hz_]*[a-zA-Z]*[\d+]*", fname)
+    if( len(endstr) != 1 ):
+        # Couldn't find expected pattern, so return the 
+        # second to last number in the string
+        return int(re.findall(r'\d+', fname)[-1])
+
+    # Check for an index number
+    sparts = endstr[0].split("_")
+    if ( len(sparts) >= 3 ):
+        return idx_offset*int(sparts[2]) + int(sparts[0][:-2])
+    else:
+        return int(sparts[0][:-2])
+
+
+
+def _find_movie_frames(folder, ext='.png', sort=True, subdir='', \
+                       substr='', skip_subdirectories=False):
+    '''Finds all the filenames matching a particular extension
+       type in the directory and its subdirectories .
+
+       INPUTS: 
+            folder, list of directory names to loop over
+
+            ext, file extension you're looking for
+            
+            subdir, string within the full parent directory to match
+
+            skip_subdirectories, boolean to skip recursion into child
+                directories when data is organized poorly
+
+       OUTPUTS: 
+            files, list of filenames as strings
+    '''
+
+    files = []
+
+    for root, dirnames, filenames in os.walk(folder):
+        if (root != folder) and skip_subdirectories:
+            continue
+        for filename in fnmatch.filter(filenames, '*' + ext):
+            if substr and (substr not in filename):
+                continue
+            if subdir and (subdir not in root):
+                continue
+            files.append(os.path.join(root, filename))
+
+
+    if len(files) == 0:
+        print("DIDN'T FIND ANY FILES :(")
+        return []
+
+    if sort:
+        # Sort files based on final index
+        files.sort(key = _find_str)
+
+    return files
+
+
+
+
 
 def _build_title(beam, transmitted=True):
 
@@ -144,6 +210,8 @@ def _build_title(beam, transmitted=True):
         title += ', Back-reflected Hemisphere'
 
     return title
+
+
 
 
 

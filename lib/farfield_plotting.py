@@ -175,7 +175,7 @@ def _project_efield(theta_grid, phi_grid, efield_rtp, polarisation, \
 
 def plot_2D_farfield(theta_grid, phi_grid, efield_rtp, \
                      simulation_parameters, title=True, \
-                     max_radiance_val=0.0, \
+                     max_radiance_trans=0.0, max_radiance_refl=0.0, \
                      unwrap_phase=True, transmitted=True, \
                      manual_phase_plot_lims=(), \
                      label_position=None, rmax=0.01, phase_sign=1.0,  \
@@ -242,8 +242,14 @@ def plot_2D_farfield(theta_grid, phi_grid, efield_rtp, \
     ### Plot the radiance and phase of the electric field specifically 
     ### definining the filled contour levels to allow for algorithmic 
     ### construction of the colorbars
+    if transmitted and max_radiance_trans:
+        max_radiance_val = max_radiance_trans
+    elif not transmitted and max_radiance_refl:
+        max_radiance_val = max_radiance_refl
+
     if not max_radiance_val:
         max_radiance_val = np.max(radiance)
+
     rad_levels = np.linspace(0, max_radiance_val, 501)
     rad_cont = axarr[0].pcolormesh(phi_grid, r_grid, radiance, \
                                    vmin=0, vmax=max_radiance_val, \
@@ -329,8 +335,12 @@ def plot_2D_farfield(theta_grid, phi_grid, efield_rtp, \
                            borderpad=0)
     nlabel = 5
     rad_ticks = np.linspace(0, max_radiance_val, nlabel)
-    rad_cbar = fig.colorbar(rad_cont, cax=rad_inset, \
-                             ticks=rad_ticks, format='%0.1f')
+    if max_radiance_val > 1.0:
+        rad_cbar = fig.colorbar(rad_cont, cax=rad_inset, \
+                                 ticks=rad_ticks, format='%0.1f')
+    else:     
+        rad_cbar = fig.colorbar(rad_cont, cax=rad_inset, \
+                                 ticks=rad_ticks, format='%0.2f')
     rad_inset.yaxis.set_ticks_position('left')
 
     ### Same thing for the phase
@@ -373,7 +383,7 @@ def plot_2D_farfield(theta_grid, phi_grid, efield_rtp, \
 
 def plot_3D_farfield(theta_grid, phi_grid, efield_rtp, \
                      simulation_parameters, title='', \
-                     max_radiance_val=0.0, \
+                     max_radiance_trans=0.0, max_radiance_refl=0.0, \
                      unwrap_phase=True, transmitted=True, \
                      manual_phase_plot_lims=(), \
                      label_position=None, rmax=0.01, phase_sign=1.0, \
@@ -415,8 +425,14 @@ def plot_3D_farfield(theta_grid, phi_grid, efield_rtp, \
 
     ### Make an array of colors corresponding to the radiance of each
     ### ray in the output farfield
+    if transmitted and max_radiance_trans:
+        max_radiance_val = max_radiance_trans
+    elif not transmitted and max_radiance_refl:
+        max_radiance_val = max_radiance_refl
+
     if not max_radiance_val:
         max_radiance_val = np.max(radiance)
+
     radiance_norm = colors.Normalize(vmin=0, vmax=max_radiance_val)
     radiance_smap = cm.ScalarMappable(norm=radiance_norm, cmap='plasma')
     radiance_colors = radiance_smap.to_rgba(radiance)
@@ -539,8 +555,6 @@ def plot_3D_farfield(theta_grid, phi_grid, efield_rtp, \
         plt.show()
 
     return fig, ax
-
-
 
 
 

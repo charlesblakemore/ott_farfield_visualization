@@ -7,8 +7,9 @@ import matlab.engine
 
 import ott_plotting
 
-ott_plotting.update_base_plotting_directory('/home/cblakemore/plots/ott_farfield')
 
+ott_plotting.update_base_plotting_directory(\
+        '/home/cblakemore/plots/ott_farfield')
 
 
 base_data_path = '../raw_data/'
@@ -31,37 +32,35 @@ simulation_parameters = {
                    'yOffset': 0.0e-6, \
                    'zOffset': 0.0e-6, \
                   'halfCone': float(np.pi/6), \
-                    'ntheta': 501, \
-                      'nphi': 501, \
+                    'ntheta': 301, \
+                      'nphi': 151, \
               'polarisation': 'X', \
-                      'Nmax': 100, \
-                'resimulate': False
+                      'Nmax': 200, \
+                'resimulate': True
 }
 
 
 
 plot_parameters = {
                       'beam': 'tot', \
-                      'rmax': 0.004, \
+                      'rmax': 0.006, \
                       'save': True, \
                       'show': True, \
                    'plot_2D': True, \
                    'plot_3D': True, \
-                 'view_elev': -40.0, \
+                 'view_elev': -45.0, \
                  'view_azim': 20.0, \
-          'max_radiance_val': 0.0, \
+        'max_radiance_trans': 25.0, \
+         'max_radiance_refl': 0.12, \
               'unwrap_phase': True, \
-    'manual_phase_plot_lims': (-2.0*np.pi, 2.0*np.pi)
+    'manual_phase_plot_lims': (-1.0*np.pi, 4.0*np.pi), \
+            'label_position': True, \
 }
 
 
 
-plot_parameters['fig_id'] = 'test/derpy'
-
-
-
-
-# simulation_parameters['zOffset'] = -150.0e-6
+plot_parameters['fig_id'] = 'tests/max_val_test'
+simulation_parameters['zOffset'] = -50.0e-6
 
 ##########################################################################
 ##########################################################################
@@ -96,17 +95,10 @@ theta_grid_refl, r_grid_refl, efield_refl\
             beam=plot_parameters['beam'])
 
 
-# ray_tracing = ott_plotting.ray_tracing_propagation(10.0e-3, 1.0) \
-#                 @ ott_plotting.ray_tracing_thin_lens(10.0e-3) \
-#                 @ ott_plotting.ray_tracing_propagation(50.0e-3, 1.0) \
-#                 @ ott_plotting.ray_tracing_thin_lens(40.8e-3) \
-#                 @ ott_plotting.ray_tracing_propagation(90.8e-3, 1.0) \
-#                 @ ott_plotting.ray_tracing_thin_lens(50.8e-3) \
-#                 @ ott_plotting.ray_tracing_propagation(50.8e-3, 1.0) \
 ray_tracing = ott_plotting.get_simple_ray_tracing_matrix()
 
 
-# ### Plot everything!
+### Plot everything!
 if plot_parameters['plot_2D']:
     
     if plot_parameters['plot_3D'] and plot_parameters['show']:
@@ -124,9 +116,14 @@ if plot_parameters['plot_2D']:
         transmitted=False, ray_tracing_matrix=ray_tracing, \
         **{**plot_parameters, 'show': show_2D_fig})
 
+
 if plot_parameters['plot_3D']:
     ott_plotting.plot_3D_farfield(
         theta_grid_trans, r_grid_trans, efield_trans, simulation_parameters, \
-        # ray_tracing_matrix=ott_plotting.get_simple_ray_tracing_matrix(), \
-        ray_tracing_matrix=ray_tracing, **plot_parameters)
+        transmitted=True, ray_tracing_matrix=ray_tracing, \
+        **{**plot_parameters, 'show': False})
+
+    ott_plotting.plot_3D_farfield(
+        theta_grid_refl, r_grid_refl, efield_refl, simulation_parameters, \
+        transmitted=False, ray_tracing_matrix=ray_tracing, **plot_parameters)
 

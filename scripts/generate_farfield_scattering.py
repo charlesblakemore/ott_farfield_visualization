@@ -31,7 +31,7 @@ simulation_parameters = {
                    'xOffset': 2.0e-6, \
                    'yOffset': 0.0e-6, \
                    'zOffset': 0.0e-6, \
-                  'halfCone': float(np.pi/6), \
+                  'halfCone': float(2.0*np.pi/6), \
                     'ntheta': 301, \
                       'nphi': 151, \
               'polarisation': 'X', \
@@ -43,24 +43,24 @@ simulation_parameters = {
 
 plot_parameters = {
                       'beam': 'tot', \
-                      'rmax': 0.006, \
-                      'save': True, \
+                      'rmax': 0.01, \
+                      'save': False, \
                       'show': True, \
                    'plot_2D': True, \
-                   'plot_3D': True, \
+                   'plot_3D': False, \
                  'view_elev': -45.0, \
                  'view_azim': 20.0, \
-        # 'max_radiance_trans': 25.0, \
-         'max_radiance_refl': 0.12, \
+        'max_radiance_trans': 10.0, \
+         'max_radiance_refl': 0.16, \
               'unwrap_phase': True, \
-    'manual_phase_plot_lims': (-1.0*np.pi, 4.0*np.pi), \
+    'manual_phase_plot_lims': (-3.0*np.pi, 2.0*np.pi), \
             'label_position': True, \
 }
 
 
 
 plot_parameters['fig_id'] = 'tests/max_val_test'
-simulation_parameters['zOffset'] = -50.0e-6
+simulation_parameters['zOffset'] = -10.0e-6
 
 ##########################################################################
 ##########################################################################

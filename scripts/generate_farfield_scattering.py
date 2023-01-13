@@ -23,12 +23,12 @@ base_data_path = '../raw_data/'
 ###    e.g. zOffset = +10um corresponds to a microsphere BELOW the focus
 simulation_parameters = {
                   'datapath': base_data_path, \
-                    'radius': 3.76e-6, \
-                'n_particle': 1.39, \
+                    'radius': 2.35e-6, \
+                'n_particle': 1.33, \
                   'n_medium': 1.00, \
                 'wavelength': 1064.0e-9, \
                         'NA': 0.095, \
-                   'xOffset': 0.0e-6, \
+                   'xOffset': 2.0e-6, \
                    'yOffset': 0.0e-6, \
                    'zOffset': 0.0e-6, \
                   'halfCone': float(np.pi/6), \
@@ -50,7 +50,7 @@ plot_parameters = {
                    'plot_3D': True, \
                  'view_elev': -45.0, \
                  'view_azim': 20.0, \
-        'max_radiance_trans': 25.0, \
+        # 'max_radiance_trans': 25.0, \
          'max_radiance_refl': 0.12, \
               'unwrap_phase': True, \
     'manual_phase_plot_lims': (-1.0*np.pi, 4.0*np.pi), \

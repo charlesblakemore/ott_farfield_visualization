@@ -246,6 +246,8 @@ def plot_2D_farfield(theta_grid, phi_grid, efield_rtp, \
         max_radiance_val = max_radiance_trans
     elif not transmitted and max_radiance_refl:
         max_radiance_val = max_radiance_refl
+    else:
+        max_radiance_val = 0
 
     if not max_radiance_val:
         max_radiance_val = np.max(radiance)
@@ -429,6 +431,8 @@ def plot_3D_farfield(theta_grid, phi_grid, efield_rtp, \
         max_radiance_val = max_radiance_trans
     elif not transmitted and max_radiance_refl:
         max_radiance_val = max_radiance_refl
+    else:
+        max_radiance_val = 0
 
     if not max_radiance_val:
         max_radiance_val = np.max(radiance)

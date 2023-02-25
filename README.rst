@@ -33,6 +33,22 @@ traps at Stanford. Note that this analysis makes a number of
 assumptions inherent to ray-tracing (paraxial, thin lens, etc.)
 which should be taken into account when interpreting results.
 
+Also, it should be noted that the user doesn't actually have to 
+plot anything. They can instead use the basic MATLAB wrapper 
+functions and accompanying data processing routines to load the
+farfield solution of the scattered electric field as viewed on 
+a sphere "infinitely" far away from the trapped dielectric 
+particle
+
+The example script ``scripts/generate_farfield_scattering.py`` 
+first runs the simulation, loads the data into python structures,
+then uses plotting routines. These are three separate activities
+that can be performed indepentely. For example, a particular
+scattering configuration can be simulated and saved, and then
+subsequent plotting (maybe with different ray-tracing/imaging
+schemes) can be done using the saved dataset. The user may also
+take the datasets themselves and do what they will with them.
+
 
 Install
 -------
@@ -41,9 +57,18 @@ Non-Python prerequisites
 ````````````````````````
 
 Users will need to `install the MATLAB engine for Python <https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html>`_ specific 
-to their personal work environment. Eventually, some functions 
-(implemented but not yet working) will make use of ffmpeg to make 
-movies, although maybe a purely pythonic solution will be better.
+to their personal work environment. This step can often manifest
+some package compatibility issues as the MATLAB version you have 
+installed requires very specific versions of python and the 
+matlabengine package in order to function. Thus "matlabengine" is
+not in the requirements file.
+
+This version of the software has been tested with MATLAB R2021b,
+Python 3.9.16, and matlabengine=9.11.19.
+
+Eventually, some functions (implemented but not yet working) will 
+make use of ffmpeg to make movies, although maybe a purely 
+pythonic solution will be better.
 
 
 Python packages

@@ -35,21 +35,50 @@ def get_simple_ray_tracing_matrix():
     Simple optical system with meridional ray tracing, given we make the
     assumption of a point source in this farfield visualization.
     
-    The parabolic mirror and all lens have been assumed ideal for this 
+    The parabolic mirror and all lenses have been assumed ideal for this 
     simple treatment. Zemax will do better eventually
     '''
 
-    T1 = ray_tracing_propagation(50.8e-3, 1.0) # Propagation to parabolic mirror
-    La = ray_tracing_thin_lens(50.8e-3)        # Recollimation
-    T2 = ray_tracing_propagation(90.8e-3, 1.0) # To telescope
-    Lb = ray_tracing_thin_lens(40.0e-3)        # First telescope lens
-    T3 = ray_tracing_propagation(50.0e-3, 1.0) # refracting telescope configuration
-    Lc = ray_tracing_thin_lens(10.0e-3)        # First telescope lens
-    T4 = ray_tracing_propagation(10.0e-3, 1.0) # projection onto QPD
+    T1 = ray_tracing_propagation(25.0e-3, 1.0)  # Propagation to parabolic mirror/lens
+    La = ray_tracing_thin_lens(25.0e-3)         # Recollimation
+    T2 = ray_tracing_propagation(175.e-3, 1.0)  # To telescope
+    Lb = ray_tracing_thin_lens(150.0e-3)        # First telescope lens
+    T3 = ray_tracing_propagation(200.0e-3, 1.0) # refracting telescope configuration
+    Lc = ray_tracing_thin_lens(50.0e-3)         # Second telescope lens
+    T4 = ray_tracing_propagation(50.0e-3, 1.0)  # projection onto QPD
 
     return T4 @ Lc @ T3 @ Lb @ T2 @ La @ T1
 
 
+
+
+def get_reflected_ray_tracing_matrix(focused=True):
+    '''
+    Simple optical system with meridional ray tracing, given we make the
+    assumption of a point source in this farfield visualization.
+    
+    The parabolic mirror and all lenses have been assumed ideal for this 
+    simple treatment. Zemax will do better eventually.
+
+    The numbers are slightly different than above to reflect the true
+    asymmetry between input and output optical systems
+    '''
+
+    T1 = ray_tracing_propagation(50.0e-3, 1.0)  # Propagation to parabolic mirror/lens
+    La = ray_tracing_thin_lens(50.0e-3)         # Recollimation
+    T2 = ray_tracing_propagation(250.0e-3, 1.0) # Back to input telescope
+    Lb = ray_tracing_thin_lens(200.0e-3)        # Second telescope lens
+    T3 = ray_tracing_propagation(250.0e-3, 1.0) # refracting telescope configuration
+    Lc = ray_tracing_thin_lens(50.0e-3)         # First telescope lens
+    ### Technically the back-reflected imaging system is not in the right
+    ### focal plane, so there is an optional argument to yield the 
+    ### intensity pattern in the right focal plane
+    if focused:
+        T4 = ray_tracing_propagation(300.0e-3, 1.0) # projection onto refl PD
+    else:
+        T4 = ray_tracing_propagation(300.0e-3, 1.0) # projection onto refl PD
+
+    return T4 @ Lc @ T3 @ Lb @ T2 @ La @ T1
 
 
 
@@ -174,7 +203,7 @@ def _project_efield(theta_grid, phi_grid, efield_rtp, polarisation, \
 
 
 def plot_2D_farfield(theta_grid, phi_grid, efield_rtp, \
-                     simulation_parameters, title=True, \
+                     simulation_parameters, make_title=True, \
                      max_radiance_trans=0.0, max_radiance_refl=0.0, \
                      unwrap_phase=True, transmitted=True, \
                      manual_phase_plot_lims=(), \
@@ -222,10 +251,9 @@ def plot_2D_farfield(theta_grid, phi_grid, efield_rtp, \
 
     fig, axarr = plt.subplots(1, 2, figsize=(12,6), sharex=True, sharey=True,\
                                subplot_kw=dict(projection='polar'))
-    if title:
-        title = util._build_title(beam, transmitted)
-        fig.suptitle('Image from Output Optics: ' + title, \
-                      fontsize=16, fontweight='bold')
+    if make_title:
+        title = util._build_title(beam, farfield=True, transmitted=transmitted)
+        fig.suptitle(title, fontsize=16, fontweight='bold')
 
     ### Plot a contour for the sine approximation breakdown (with a label)
     ### if so desired
@@ -326,7 +354,10 @@ def plot_2D_farfield(theta_grid, phi_grid, efield_rtp, \
     ### Do a tight_layout(), but then pull in the sides of the figure a bit
     ### to make room for colorbars
     fig.tight_layout()
-    fig.subplots_adjust(left=0.075, right=0.925, top=0.85, bottom=0.05)
+    if make_title:
+        fig.subplots_adjust(left=0.075, right=0.925, top=0.85, bottom=0.05)
+    else:
+        fig.subplots_adjust(left=0.075, right=0.925, top=0.95, bottom=0.05)
 
     ### Make the colorbars explicitly first by defining and inset axes
     ### and then plotting the colorbar in the new inset
@@ -414,7 +445,7 @@ def plot_3D_farfield(theta_grid, phi_grid, efield_rtp, \
     else:
         ms_position = None
 
-    title = util._build_title(beam, transmitted)
+    #title = util._build_title(beam, transmitted)
 
     radiance, phase = _project_efield(theta_grid, phi_grid, efield_rtp, \
                                       polarisation, unwrap_phase)

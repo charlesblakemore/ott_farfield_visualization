@@ -198,17 +198,21 @@ def _find_movie_frames(folder, ext='.png', sort=True, subdir='', \
 def _build_title(beam, farfield=True, transmitted=True):
 
     if beam == 'inc':
-        title = 'Incident Gaussian Beam'
+        beam_verbose = 'Incident Gaussian Beam'
     elif beam == 'scat':
-        title = 'Scattered Beam'
+        beam_verbose = 'Scattered Beam'
     else:
-        title = 'Total Beam'
+        beam_verbose = 'Total Beam'
 
     if farfield:
         if transmitted:
-            title += ', Transmitted Hemisphere'
+            title = 'Image from Output Optics: ' \
+                        + beam_verbose \
+                        + ', Transmitted Hemisphere'
         else:
-            title += ', Back-reflected Hemisphere'
+            title = 'Image Propagated Through Input: ' \
+                        + beam_verbose \
+                        + ', Reflected Hemisphere'
 
     return title
 

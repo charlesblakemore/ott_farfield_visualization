@@ -17,8 +17,8 @@ import scipy.constants as constants
 ##########################################################################
 
 from farfield_plotting import *
-from nearfield_plotting import *
-from force_plotting import *
+#from nearfield_plotting import *
+#from force_plotting import *
 
 ##########################################################################
 ##########################################################################

@@ -73,7 +73,7 @@ or some equivalent::
 
    pip install -e ott_visualization --user
 
-where pip is pip3 for Python3 (tested on Python 3.6.9). Be careful 
+where pip is pip3 for Python3 (tested on Python 3.9.16). Be careful 
 NOT to use ``sudo``, as the latter two installations make a file
 ``easy-install.pth`` in either the global or the local directory
 ``lib/python3.X/site-packages/easy-install.pth``, and sudo will

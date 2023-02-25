@@ -27,10 +27,17 @@ Non-Python prerequisites
 ````````````````````````
 
 Users will need to `install the MATLAB engine for Python <https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html>`_ specific 
-to their personal work environment, as well as the ``unwrap`` package for 
-two-dimensional phase unwrapping. Other than that, standard NumPy and 
-Scipy installations should cover everything you neeed. The explicit
-requirements will be enumerated soon.
+to their personal work environment. Eventually, some functions (implemented
+but not yet working) will make use of ffmpeg to make movies, although
+maybe a purely pythonic solution will be better.
+
+
+Python packages
+````````````````
+
+Use pip to install packages::
+
+   pip install -r requirements.txt
 
 
 From sources

@@ -1,7 +1,5 @@
 import sys, os
 
-from tqdm import tqdm
-
 import numpy as np
 import matlab.engine
 
@@ -66,7 +64,7 @@ simulation_parameters['zOffset'] = -10.0e-6
 ##########################################################################
 ##########################################################################
 
-
+### You shouldn't have to edit anything below
 
 ### Build the MATLAB formatted argument list from the dictionary
 ### defined at the top of this script

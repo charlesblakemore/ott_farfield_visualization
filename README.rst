@@ -76,19 +76,17 @@ Python packages
 
 Use pip to install packages::
 
-   pip install -r requirements.txt
+   pip install --upgrade pip
+   pip install -r ./ott_visualization/requirements.txt
 
 
 From sources
 ````````````
 
 To install system-wide, noting the path to the src since no wheels
-exist on PyPI, use::
-
-   pip install ./ott_visualization
-
-If you intend to edit the code and want the import calls to reflect
-those changes, install in developer mode::
+exist on PyPI, as well as the ``-e`` flag so one can edit the code 
+and have the import calls to reflect those changes, install in 
+developer mode::
 
    pip install -e ott_visualization
 

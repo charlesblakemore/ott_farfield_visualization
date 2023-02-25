@@ -195,7 +195,7 @@ def _find_movie_frames(folder, ext='.png', sort=True, subdir='', \
 
 
 
-def _build_title(beam, transmitted=True):
+def _build_title(beam, farfield=True, transmitted=True):
 
     if beam == 'inc':
         title = 'Incident Gaussian Beam'
@@ -204,10 +204,11 @@ def _build_title(beam, transmitted=True):
     else:
         title = 'Total Beam'
 
-    if transmitted:
-        title += ', Transmitted Hemisphere'
-    else:
-        title += ', Back-reflected Hemisphere'
+    if farfield:
+        if transmitted:
+            title += ', Transmitted Hemisphere'
+        else:
+            title += ', Back-reflected Hemisphere'
 
     return title
 

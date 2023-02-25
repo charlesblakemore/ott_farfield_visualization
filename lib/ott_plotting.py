@@ -17,6 +17,8 @@ import scipy.constants as constants
 ##########################################################################
 
 from farfield_plotting import *
+from nearfield_plotting import *
+from force_plotting import *
 
 ##########################################################################
 ##########################################################################
@@ -30,6 +32,8 @@ def update_base_plotting_directory(new_dir):
 
 
 
+### This one doesn't work yet. Mostly just wrote it down so I remembered
+### the ffmpeg command to string frames together
 def make_movie(directory, framerate=10, slow_framerate=2, \
                slow_frames=(), outfile=''):
     '''.'''

@@ -19,6 +19,20 @@ description of the software together with accompanying literature.
 
 `Optical Tweezers Toolbox <https://www.mathworks.com/matlabcentral/fileexchange/73541-ott-optical-tweezers-toolbox>`_ - Lenton, Isaac C. D., et al.
 
+As of now, the code is relatively simple and serves more as an 
+example wrapper of the MATLAB code. It only handles input TEM00 
+modes with linear polarization, but the modularization should
+allow this functionality to be expanded once the structure is 
+understood by the user.
+
+There was an idea at the outset of this work to also include a 
+simple ray-tracing scheme to propagate the light from the trap
+itself through a typical output imaging system. A single example
+exists that mimics the imaging system in place in on the optical
+traps at Stanford. Note that this analysis makes a number of
+assumptions inherent to ray-tracing (paraxial, thin lens, etc.)
+which should be taken into account when interpreting results.
+
 
 Install
 -------
@@ -27,9 +41,9 @@ Non-Python prerequisites
 ````````````````````````
 
 Users will need to `install the MATLAB engine for Python <https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html>`_ specific 
-to their personal work environment. Eventually, some functions (implemented
-but not yet working) will make use of ffmpeg to make movies, although
-maybe a purely pythonic solution will be better.
+to their personal work environment. Eventually, some functions 
+(implemented but not yet working) will make use of ffmpeg to make 
+movies, although maybe a purely pythonic solution will be better.
 
 
 Python packages

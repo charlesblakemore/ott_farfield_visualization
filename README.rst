@@ -56,6 +56,15 @@ Install
 Non-Python prerequisites
 ````````````````````````
 
+**MATLAB is clearly required** for this to work. Supposedly, the
+Optical Tweezers Toolbox is compatible with R2016b and later
+releases, although it was built in R2018a, and tested here with
+R2021b.
+
+The Optical Tweezers Toolbox is `available from MathWorks <https://www.mathworks.com/matlabcentral/fileexchange/73541-ott-optical-tweezers-toolbox>`_ and must be installed and
+added to the default MATLAB path. This happens automatically if
+installed with the `MATLAB Add ons menu <https://www.mathworks.com/help/matlab/add-ons.html>`_
+
 Users will need to `install the MATLAB engine for Python <https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html>`_ specific 
 to their personal work environment. This step can often manifest
 some package compatibility issues as the MATLAB version you have 
@@ -80,8 +89,8 @@ Use pip to install packages::
    pip install -r ./ott_visualization/requirements.txt
 
 
-From sources
-````````````
+Install this module from sources
+````````````````````````````````
 
 To install system-wide, noting the path to the src since no wheels
 exist on PyPI, as well as the ``-e`` flag so one can edit the code 

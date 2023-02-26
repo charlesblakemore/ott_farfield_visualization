@@ -63,7 +63,7 @@ R2021b.
 
 The Optical Tweezers Toolbox is `available from MathWorks <https://www.mathworks.com/matlabcentral/fileexchange/73541-ott-optical-tweezers-toolbox>`_ and must be installed and
 added to the default MATLAB path. This happens automatically if
-installed with the `MATLAB Add ons menu <https://www.mathworks.com/help/matlab/add-ons.html>`_
+installed with the `MATLAB Add ons menu <https://www.mathworks.com/help/matlab/add-ons.html>`_.
 
 Users will need to `install the MATLAB engine for Python <https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html>`_ specific 
 to their personal work environment. This step can often manifest
